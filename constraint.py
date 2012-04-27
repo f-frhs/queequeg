@@ -10,7 +10,7 @@ import pstring
 from regpat import PatternActionSet, PatCounter
 from sentence import Sentence, TextTokenizer, SentenceSplitter, POSTagger
 from abstfilter import AbstractFeeder, AbstractFilter, AbstractConsumer
-from document import HTMLProcessor, TexProcessor, PlainTextProcessor
+from document import PlainTextProcessor
 from unification import Unifier, UnificationError, forall, exists
 from postagfix import POSTagFixer
 from output import TerminalOutput

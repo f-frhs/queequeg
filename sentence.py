@@ -10,7 +10,7 @@ import pstring
 
 from dictionary import Dictionary
 from abstfilter import AbstractFeeder, AbstractFilter, AbstractConsumer
-from document import HTMLProcessor, TexProcessor, PlainTextProcessor
+from document import PlainTextProcessor
 
 
 # I'm a ``hoge'' rat-a-tat.

@@ -9,7 +9,7 @@ import sys, re
 from regpat import PatternSet, PatCounter
 from sentence import Sentence, Dictionary, TextTokenizer, SentenceSplitter, POSTagger
 from abstfilter import AbstractFeeder, AbstractFilter, AbstractConsumer
-from document import HTMLProcessor, TexProcessor, PlainTextProcessor
+from document import PlainTextProcessor
 
 
 ##
