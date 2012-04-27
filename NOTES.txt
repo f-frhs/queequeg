@@ -4,3 +4,4 @@ adj, adv, noun, verb . exc
 
 cntlist.rev
 
+The files from this directory are index.special and convdict.py.
