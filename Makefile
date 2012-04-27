@@ -14,7 +14,7 @@ test:
 
 clean:
 	-rm -f *.pyc
-	-rm README
+	-rm -f README
 
 veryclean: 	clean
 	-rm -f ./dict.txt
