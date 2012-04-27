@@ -1,0 +1,6 @@
+The WordNet files used in generating the dictionary are
+
+adj, adv, noun, verb . exc
+
+cntlist.rev
+

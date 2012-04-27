@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-##  $Id: convdict.py,v 1.2 2003/07/02 06:38:39 euske Exp $
 ##
 ##  convdict.py - WordNet Dictionary converter
 ##
@@ -20,6 +19,9 @@ POS_THRESHOLD = 0.03
 
 
 pat_ys = re.compile(r".*[^auieo]y$")
+
+# Crude pluralizer
+
 def get_s(s):
   if s.endswith("s"):
     return s[:-1]+"ses"
@@ -136,6 +138,8 @@ class DictionaryConverter:
     except KeyError:
       self.add_pos_forcibly(s, pos, freq)
     return
+
+# Read the .exc files in the wordnet distribution.
 
   def read_exc(self, fname):
     fname = self.wordnet_dir+"/"+fname+".exc"
