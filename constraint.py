@@ -13,7 +13,7 @@ from abstfilter import AbstractFeeder, AbstractFilter, AbstractConsumer
 from document import PlainTextProcessor
 from unification import Unifier, UnificationError, forall, exists
 from postagfix import POSTagFixer
-from output import TerminalOutput
+from output import TerminalOutput, JsonOutput
 from grammarerror import GrammarNounAgreementError, GrammarVerbAgreementError, GrammarNonDeterminerError
 
 
@@ -272,18 +272,3 @@ class ConstraintChecker(AbstractFilter):
     return
 
 
-#
-if __name__ == "__main__":
-  if sys.argv[1] == "-t":
-    docproc = TexProcessor
-  elif sys.argv[1] == "-l":
-    docproc = HTMLProcessor
-  elif sys.argv[1] == "-p":
-    docproc = PlainTextProcessor
-  else:
-    assert 0
-  import dictionary
-  dict = dictionary.Dictionary("LOCAL/dict.txt")
-  out = TerminalOutput()
-  pipeline = docproc(TextTokenizer(SentenceSplitter(POSTagger(dict, POSTagFixer(ConstraintChecker(out, ["sv1","sv2","sv3","det","plural"]))))))
-  pipeline.read(pstring.PFile(sys.stdin))

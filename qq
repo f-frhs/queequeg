@@ -16,7 +16,7 @@ from abstfilter import AbstractFeeder, AbstractFilter, AbstractConsumer
 from document import PlainTextProcessor
 from sentence import TextTokenizer, SentenceSplitter, POSTagger
 from postagfix import POSTagFixer
-from output import TerminalOutput
+from output import TerminalOutput, JsonOutput
 from constraint import ConstraintChecker
 
 
@@ -50,10 +50,6 @@ def check_file(fname, verbosity, docproc, debuglevel, dict, stage, warntypes):
     
   if not docproc:
     docproc = PlainTextProcessor
-    if fname.endswith(".tex"):
-      docproc = TexProcessor
-    elif fname.endswith(".htm") or fname.endswith(".html"):
-      docproc = HTMLProcessor
 
   # grammar: 4
   if 4 <= stage:
