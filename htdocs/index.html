@@ -1,0 +1,288 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=euc-jp">
+<title>英文法チェッカ Queequeg</title>
+<style type="text/css">
+<!--
+BODY { line-height: 130%; }
+BLOCKQUOTE.gray { background: #eeeeee; }
+-->
+</style>
+</head>
+
+<body>
+<p> <a href="index-e.html">[English]</a>
+
+<h2>英文法チェッカ Queequeg</h2>
+
+<div align=right><font size="-1">
+$Id: index.html,v 1.8 2003/07/27 13:54:05 euske Exp $
+</font></div>
+
+<p>
+<a href="http://sourceforge.net/projects/queequeg/">
+<img align=center src="http://sourceforge.net/sflogo.php?group_id=82185&type=1" alt="SourceForge Logo" border=0 height="31" width="88">
+Project Page</a> |
+<a href="#download">ダウンロード</a> |
+<a href="#usage">つかいかた</a>
+
+
+<hr>
+<h3>これなに?</h3>
+
+<p> Queequeg は英語ネイティブでない人のための簡単な英文法チェッカです (英文スペルチェッカではありません)。
+おもに動詞の語形変化における数の一致 (3単元の s) を検査します。
+英語で学術論文やビジネス文書などのフォーマルな文章を書く場合、
+これらの初歩的な文法ミスは可能なかぎりなくしたいものですが、英語に慣れていない
+日本人にとってこれらをチェックするのは骨の折れる仕事です。Queequeg はこのチェックを
+できるかぎり自動的に行うことによって、文書作成にかける総合的な時間を短縮することを目的としています。
+Queequeg は UN*X 上で動作します。
+ちなみに「Queequeg」という名前はメルヴィルの代表作「白鯨 (Moby-Dick)」に出てくる登場人物に由来しています。
+
+
+<hr>
+<h3>使用例</h3>
+
+たとえば以下のような英文を書いたとします:
+
+<blockquote class=gray><pre>
+Paraphrases plays an important role in the variety and complexity
+of natural language documents. However, they add to the difficulty
+of natural language processing. Here we describe a procedure for
+obtaining paraphrases from news articles. Articles derived from
+different newspapers can contain paraphrases if it indeed report
+the same event on the same day. We exploit these two feature by
+using Named Entity recognition. Our approach is based on the
+assumption that named entities are preserved across
+paraphrases. We applied our method to articles of two domains and
+obtained notable example.
+</pre></blockquote>
+
+Queequeg (コマンド名は <code>qq</code>) に対してこの文書のファイル名を
+与えると、Queequeg は以下のような出力を返します:
+
+<p>
+<font color=white><blockquote><table bgcolor=black>
+<tr><td valign=top><code><strong>$ </strong>qq -Wall sample.txt</code></td>
+<td valign=top></td></tr>
+<tr><td valign=top><code>-- sample.txt</code></td>
+<td valign=top></td></tr>
+<tr><td valign=top><code>sample.txt:0: <font color="#ffff00"><strong>(S:Paraphrases) (V:plays)</strong></font> an important ...</code></td>
+<td valign=top><i>(paraphrases と plays の数の不一致)</i></td></tr>
+<tr><td valign=top><code>sample.txt:0: ... variety and <font color="#ff0000"><strong>(complexity)</strong></font> of natural ...</code></td>
+<td valign=top></td></tr>
+<tr><td valign=top><code>sample.txt:2: ... difficulty of <font color="#ff0000"><strong>(natural language)</strong></font> processing .</code></td>
+<td valign=top></td></tr>
+<tr><td valign=top><code>sample.txt:4: ... paraphrases if <font color="#ffff00"><strong>(S:it)</strong></font> indeed <font color="#ffff00"><strong>(V:report)</strong></font> the same ...</code></td>
+<td valign=top><i>(it と report の数の不一致)</i></td></tr>
+<tr><td valign=top><code>sample.txt:5: We exploit <font color="#00ff00"><strong>(Det:these two) (N:feature)</strong></font> by using ...</code></td>
+<td valign=top><i>(feature は複数形にすべき)</i></td></tr>
+<tr><td valign=top><code>sample.txt:5: ... by using <font color="#ff0000"><strong>(Named Entity recognition)</strong></font> .</code></td>
+<td valign=top></td></tr>
+<tr><td valign=top><code>sample.txt:8: ... and obtained <font color="#ff0000"><strong>(notable example)</strong></font> .</code></td>
+<td valign=top><i>(冠詞が必要、あるいは複数形にすべき)</i></td></tr>
+</table></blockquote></font>
+
+<p>
+それぞれの文法間違いは色分けされて出力されます。行頭の数字はファイル中の行番号です。
+<p>
+いまのところ、Queequeg はプレインテキスト形式、LaTeX 形式、HTML の各文書構造を認識します。
+
+<a name="download"></a>
+<hr>
+<h3>ダウンロードとインストール</h3>
+
+<h4>必要なもの</h4>
+<dl>
+  <dt> <a href="http://www.python.org/">Python 2.3 以上</a>
+  <dd> プログラム本体は Python で書かれています。バージョン 2.3 以上のインタプリタが必要です。
+       
+  <dt> <a href="http://www.cogsci.princeton.edu/~wn/">Wordnet 1.7.1</a>
+  <dd> WordNet は George Miller 氏によって開発されたオンラインのシソーラスです。
+       フリーで配布可能であり、
+       <a href="http://packages.debian.org/unstable/text/wordnet.html">Debian Package にも収録されています。</a>
+       <br>
+       (Queequeg では WordNet パッケージに含まれている辞書ファイルのみを使用しますので、
+       実際にバイナリをインストールする必要はありません。)
+       
+  <dt> <a href="http://pilcrow.madison.wi.us/#pycdb">python-cdb 0.32</a> (オプション)
+  <dd> 辞書ファイルのアクセスに使用します。なくても動きますが、あったほうが高速に動作します。
+</dl>
+
+<h4>本体のダウンロード</h4>
+<p>
+以下のページからダウンロードしてください。(約60kbytes)
+<ul>
+  <li> <a href="http://sourceforge.net/project/showfiles.php?group_id=82185">http://sourceforge.net/project/showfiles.php?group_id=82185</a> (最新バージョン: 0.91)
+</ul>
+
+<h4>インストール方法</h4>
+
+<ol>
+  <li> 適当な場所 (<code>/usr/local/queequeg-0.9</code> など) に
+       Queequeg のアーカイブを展開する。
+  <li> <a href="http://www.cogsci.princeton.edu/~wn/">Wordnet 1.7.1</a> を
+       どこかの場所に展開しておく。
+  <li> 辞書を作成する。Queequeg のディレクトリで以下のようにタイプする:
+       <blockquote><code><strong>$</strong> make dict WORDNET=<i>/src/wordnet/dict</i></code></blockquote>
+       ここで、変数 <code>WORDNET</code> には
+       WordNet を展開したディレクトリ中にある <code>dict/</code> ディレクトリのパスを指定する
+       (Debian パッケージから WordNet をインストールした場合、
+       これは /usr/share/wordnet 以下にあります)。<br>
+       python-cdb モジュールがインストールされていれば、
+       <code>dict.cdb</code> というファイルが、されていなければ
+       <code>dict.txt</code> というファイルが生成される。
+  <li> Queequeg のディレクトリにあるファイル <code>qq</code> がメインプログラムである。
+       これにパスを通しておく。
+       <code>/usr/local/bin</code> などから <code>qq</code> にシンボリックリンクを張ってもよい
+       (<code>qq</code> は自分と同じディレクトリに置いてある辞書をさがす)。
+       
+</ol>
+
+
+<a name="usage"></a>
+<hr>
+<h3>つかいかた</h3>
+<p>
+基本的に端末上で Queequeg (コマンド名 <code>qq</code>) にチェックしたいファイル名を渡すだけです。
+Queequeg はファイル名の拡張子 (.tex, .html, .htm) からそのファイルの形式を認識します。
+<p>
+Queequeg は、現在のところ 3種類の文法間違いを検査します:
+<ul>
+  <li> <font color="#008000"><strong>緑色</strong></font> …
+       名詞句の determiner と数が一致していない (例: three desk, a cups など)。
+  <li> <font color="#808000"><strong>黄色</strong></font> …
+       主語と動詞の数が一致していない (例: he drink a coffee., I wrote a book which make me rich. など)。
+  <li> <font color="#800000"><strong>赤色</strong></font> …
+       定冠詞が足りない (例: this is pen. など)。<br>
+       (注意: このチェックはかなりうるさいので、デフォルトではオフになっています。
+       このチェックを有効にするには <code>-Wall</code> オプションを指定してください)
+</ul>
+
+<p>
+また <code>qq</code> コマンドは以下のようなコマンドライン・オプションを受けつけます:
+<p>
+<table border>
+<tr><td><strong>オプション</strong></td><td><strong>機能</strong></td></tr>
+<tr><td><code>-v</code></td>
+<td>冗長モード (verbose) にする。エラーの種類が表示される。</td></tr>
+<tr><td><code>-q</code></td>
+<td>寡黙モード (quiet) にする。ファイル名が表示されなくなる。</td></tr>
+<tr><td><code>-p</code></td>
+<td>すべてのファイルを強制的にプレインテキスト形式として解釈する。
+なお、プレインテキスト形式では段落の区切りは空行で表されます。</td></tr>
+<tr><td><code>-l</code></td>
+<td>すべてのファイルを強制的に HTML 形式として解釈する。</td></tr>
+<tr><td><code>-t</code></td>
+<td>すべてのファイルを強制的に LaTeX 形式として解釈する。</td></tr>
+<tr><td><code>-s  <i>pathname</i></code></td>
+<td>システム辞書 (dict.txt あるいは dict.cdb) のパスを指定する。
+デフォルトでは、qq コマンドと同一ディレクトリ上にある
+dict.txt あるいは dict.cdb を検索する。</td></tr>
+</table>
+
+<p>
+以下のオプションはおもにデバッグ用です:
+<table border>
+<tr><td><strong>オプション</strong></td><td><strong>機能</strong></td></tr>
+<tr><td><code>-D  <i>debuglevel</i></code></td>
+<td>デバッグレベルを整数で指定する。</td></tr>
+<tr><td><code>-S  <i>stage</i></code></td>
+<td>入力文に対してどのステージまで処理を行なうかを指定する。
+デフォルトではこれは <code>grammar</code> (文法チェックを行う) までだが、
+<code>token</code> (入力ファイルをトークンに切り分ける)、
+<code>sentence</code> (文単位を認識する)、
+<code>pos0</code> (品詞解析の初期)、
+<code>pos1</code> (品詞解析の第二段階)
+を指定できる。</td></tr>
+<tr><td><code>-W  <i>type1,type2,...</i></code></td>
+<td>どのタイプの文法チェックを行うかをカンマで区切って複数指定する。
+タイプには <code>sv1</code> (前置詞句をまたいだ主語-動詞の検査)、
+<code>sv2</code> (前置詞句をまたがない主語-動詞の検査)、
+<code>sv3</code> (there 構文における主語-動詞の検査)、
+<code>det</code> (determiner の有無を検査)、
+<code>plural</code> (名詞の単複を検査)
+がある。
+デフォルトではこれは <code>sv1,sv2,sv3,plural</code> になっている。</td></tr>
+</table>
+
+<hr>
+<h3>理不尽な出力がされるのはなぜ?</h3>
+<p>
+現在のバージョンはまだユーザにとって理不尽と思われる
+多くの false positive (本来エラーでないのにエラーと判定される) を出力します。
+<p>
+たとえば "my paper clip. (私のペーパークリップ)" という文はただの名詞句に思えますが、
+実際にはこれは "my paper clip[s]. (私の紙は、つまむ)" という主語+動詞をもった文に s を
+つけ忘れたものであるとも解釈できるため、エラーが警告されます。
+また "three additional links (3つの追加リンク)" という名詞句をチェックすると
+"three" と "links" の数が一致しない、という警告が出力されますが、
+これはじつは "links" (ゴルフ場のリンク) という単数の名詞が辞書に入っているためです。
+(しかしこの名詞はじつは単複同型であり、これは辞書の欠陥です)
+<p>
+また、とくに determiner のチェックを on にすると大量の false positive を出力します。
+これはある名詞が mass noun か否かの判定ができていないためです。
+ふつう meat, water などの物質名や、information, recognition などといった抽象名詞には
+冠詞は必要ありませんが、この情報は WordNet 辞書には含まれていません。
+(COMLEX などはそういう情報をもった辞書なのですが、フリーで配布不可能なため使用を見合わせました)
+
+<hr>
+<h3>バグ・TODO</h3>
+<ul>
+  <li> 精度の向上。パラノイア的なモードとそうでないモードを分ける。
+  <li> ユーザ辞書をサポートしていません。早めにやります。
+  <li> 未知語に対する警告。
+  <li> 端末上の色を変えられるように。
+  <li> ispell ライクな Emacs 上のインターフェイス、
+       Tkinter 経由のインターフェイスをつくること。
+  <li> Windows 上への移植。
+  <li> collocation のサポート。
+  <li> <code>setup.py</code> のサポート。
+  <li> ソースコードのコメント、全体の見直し。
+  <li> おそい。
+</ul>
+       
+
+<hr>
+<a name="tech"><h3>技術的な情報</h3></a>
+<p>
+現在 Queequeg の文法チェックは簡単な有限オートマトン (= 正規表現) にもとづいた
+パターン認識と、各パターンに付与した素性の単一化 (unification) によって行っています。
+スピードおよびカヴァレッジをかせぐためにきちんと構文解析していません。
+メインのルーチンは <code>constraint.py</code> および <code>unification.py</code> です。
+<p>
+品詞解析 (pos tagging) は 2段階に分けて行っています。
+まず辞書引きをおこなって複数の候補を得たあと (<code>sentence.py, dictionary.py</code>)、
+これまた正規表現ベースのパターンマッチングによっていくつかの
+品詞を fix するという方法をとっています (<code>postagfix.py</code>)。
+<p>
+使用している品詞体系は Penn Treebank 体系を拡張したものです。
+Queequeg では数の一致を POS タグで判断しているため、名詞の複数形をあらわす NNS を真似て、
+代名詞 (PRP) や determiner (DT) に対しも同様に複数であることを表す拡張形 PRPS、DTS といった
+品詞名を使っています。これは PTB 体系の上位互換であるため、このタグから PTB の体系に
+マッピングするのは非常に簡単です。ただし付属の品詞解析器はまだひどく性能が悪いので、
+これをほかの目的に使用するのはむずかしいでしょう。
+<P>
+Queequeg における品詞解析の問題は、与えられた英文が正しいとは仮定できないことにあります。
+そのため動詞に3単元の s がついていないからといって、かならずしもそれが名詞であるとはかぎりません。
+これが現在の Queequeg の品詞解析の精度低下につながっています。
+
+<hr>
+<a name="license"><h3>ライセンス</h3></a>
+<p> Queequeg は無保証のソフトウエアです。
+このソフトウエアは GNU General Public License (GNU 一般公衆利用承諾契約書) に従って配布されます。
+
+<hr>
+<h3>作者からのおねがい</h3>
+<p>
+まだテストが足りません。フィードバックをお待ちしております。
+インストール上の問題もぜひお知らせください。
+<p> <a href="http://www.unixuser.org/~euske/">新山 祐介</a>
+<img src="address.png"> まで。
+
+
+<hr>
+<address>Yusuke Shinyama</address>
+</body>
+</html>

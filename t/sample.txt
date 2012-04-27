@@ -1,0 +1,10 @@
+Paraphrases plays an important role in the variety and complexity
+of natural language documents. However, they add to the difficulty
+of natural language processing. Here we describe a procedure for
+obtaining paraphrases from news articles. Articles derived from
+different newspapers can contain paraphrases if it indeed report
+the same event on the same day. We exploit these two feature by
+using Named Entity recognition. Our approach is based on the
+assumption that named entities are preserved across
+paraphrases. We applied our method to articles of two domains and
+obtained notable example.

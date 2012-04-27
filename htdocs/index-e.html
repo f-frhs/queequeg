@@ -1,0 +1,301 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=euc-jp">
+<title>Queequeg, A Tiny English Grammar Checker</title>
+<style type="text/css">
+<!--
+BLOCKQUOTE.gray { background: #eeeeee; }
+-->
+</style>
+</head>
+
+<body>
+<p> <a href="index.html">[Japanese]</a>
+
+<h2>Queequeg, A Tiny English Grammar Checker</h2>
+
+<div align=right><font size="-1">
+$Id: index-e.html,v 1.1 2003/07/27 13:54:05 euske Exp $
+</font></div>
+
+<p>
+<a href="http://sourceforge.net/projects/queequeg/">
+<img align=center src="http://sourceforge.net/sflogo.php?group_id=82185&type=1" alt="SourceForge Logo" border=0 height="31" width="88">
+Project Page</a> |
+<a href="#download">Download</a> |
+<a href="#usage">How to Use</a>
+
+
+<hr>
+<h3>What's It?</h3>
+
+<p> Queequeg is a tiny English grammar checker for non-native
+speakers who are not used to verb conjugation and number
+agreement.  We especially focus on people who're writing academic
+papers or business documents where thorough checking is required.
+We aim to reduce this laborious work with automated checking.
+Queequeg is named after a character in Herman Melville's
+masterpiece.
+
+
+<hr>
+<h3>Sample Run</h3>
+
+Suppose you wrote the following sentences:
+
+<blockquote class=gray><pre>
+Paraphrases plays an important role in the variety and complexity
+of natural language documents. However, they add to the difficulty
+of natural language processing. Here we describe a procedure for
+obtaining paraphrases from news articles. Articles derived from
+different newspapers can contain paraphrases if it indeed report
+the same event on the same day. We exploit these two feature by
+using Named Entity recognition. Our approach is based on the
+assumption that named entities are preserved across
+paraphrases. We applied our method to articles of two domains and
+obtained notable example.
+</pre></blockquote>
+
+<p> Queequeg (command name: <code>qq</code>) prints the following
+results for the above document:
+
+<p>
+<font color=white><blockquote><table bgcolor=black>
+<tr><td valign=top><code><strong>$ </strong>qq -Wall sample.txt</code></td>
+<td valign=top></td></tr>
+<tr><td valign=top><code>-- sample.txt</code></td>
+<td valign=top></td></tr>
+<tr><td valign=top><code>sample.txt:0: <font color="#ffff00"><strong>(S:Paraphrases) (V:plays)</strong></font> an important ...</code></td>
+<td valign=top><i>(number disagreement between "paraphrases" and "plays")</i></td></tr>
+<tr><td valign=top><code>sample.txt:0: ... variety and <font color="#ff0000"><strong>(complexity)</strong></font> of natural ...</code></td>
+<td valign=top></td></tr>
+<tr><td valign=top><code>sample.txt:2: ... difficulty of <font color="#ff0000"><strong>(natural language)</strong></font> processing .</code></td>
+<td valign=top></td></tr>
+<tr><td valign=top><code>sample.txt:4: ... paraphrases if <font color="#ffff00"><strong>(S:it)</strong></font> indeed <font color="#ffff00"><strong>(V:report)</strong></font> the same ...</code></td>
+<td valign=top><i>(number disagreement between "it" and "report")</i></td></tr>
+<tr><td valign=top><code>sample.txt:5: We exploit <font color="#00ff00"><strong>(Det:these two) (N:feature)</strong></font> by using ...</code></td>
+<td valign=top><i>("feature" should be in plural form)</i></td></tr>
+<tr><td valign=top><code>sample.txt:5: ... by using <font color="#ff0000"><strong>(Named Entity recognition)</strong></font> .</code></td>
+<td valign=top></td></tr>
+<tr><td valign=top><code>sample.txt:8: ... and obtained <font color="#ff0000"><strong>(notable example)</strong></font> .</code></td>
+<td valign=top><i>(an article needed, or should be plural)</i></td></tr>
+</table></blockquote></font>
+
+<p> Different types of errors are shown in different colors.  A
+number displayed at the beginning of each line is the line number
+in a file.
+
+<p> Currently Queequeg recognizes the following document formats:
+plain text, LaTeX and HTML.
+
+<a name="download"></a>
+<hr>
+<h3>Download and Install</h3>
+
+<h4>Prerequisite</h4>
+<dl>
+  <dt> <a href="http://www.python.org/">Python 2.3 or newer</a>
+  <dd> The program is written in Python.
+       You need version 2.2 or newer so that it works fine.
+       
+  <dt> <a href="http://www.cogsci.princeton.edu/~wn/">Wordnet 1.7.1</a>
+  <dd> WordNet is a free online thesaurus developed by Prof. George Miller.
+       <a href="http://packages.debian.org/unstable/text/wordnet.html">This package is now contained in Debian.</a>
+       <br>
+       (Queequeg uses only dictionary files included in WordNet distribution package,
+       so you don't need to install the binaries.)
+       
+  <dt> <a href="http://pilcrow.madison.wi.us/#pycdb">python-cdb 0.32</a> (optional)
+  <dd> Used for dictionary access. Queequeg works faster with this library.
+
+</dl>
+
+<h4>Download of the Program</h4>
+<p>
+Download the archive file in the follwing page. (about 60kbytes)
+<ul>
+  <li> <a href="http://sourceforge.net/project/showfiles.php?group_id=82185">http://sourceforge.net/project/showfiles.php?group_id=82185</a> (the newest version: 0.91)
+</ul>
+
+<h4>Installation</h4>
+
+<ol>
+  <li> Extract the archive file in an appropreate directory
+       (e.g. <code>/usr/local/queequeg-0.9</code>).
+  <li> Extract <a href="http://www.cogsci.princeton.edu/~wn/">Wordnet 1.7.1</a> package
+       somewhere.
+  <li> Build a system dictionary.
+       Type at the top directory of Queequeg:
+       <blockquote><code><strong>$</strong> make dict WORDNET=<i>/src/wordnet/dict</i></code></blockquote>
+       where the environment variable <code>WORDNET</code> should be
+       the pathname of the <code>dict/</code> directory in WordNet package.
+       <br>
+       (Note: If you're using a Debian package, the dictionaries are put in
+       <code>/usr/share/wordnet</code>.)<br>
+       If Python-cdb module is installed,
+       a CDB type dictionary file <code>dict.cdb</code> is generated.
+       Otherwise <code>dict.txt</code> is generated.
+  <li> The main program is <code>qq</code>. Have your shell look into this path.
+       You may create a symbolic link in some directory like <code>/usr/local/bin</code> to
+       <code>qq</code>.
+       (It tries to find a dictionary file located at the same directory.)
+       
+</ol>
+
+
+<a name="usage"></a>
+<hr>
+<h3>How to Use</h3>
+
+<p> Just feed Queequeg a file you want to check (command name:
+<code>qq</code>).  It recognizes the document formats
+automatically based on its extention (.tex, .html or .htm).
+
+<p> Queequeg issues warnings based on the follwing types of
+grammatical errors:
+
+<ul>
+  <li> <font color="#008000"><strong>GREEN</strong></font> ...
+       Number disagreement between a noun group and its determiner.
+       (e.g. "three desk", "a cups")
+  <li> <font color="#808000"><strong>YELLOW</strong></font> ...
+       Number disagreement between a subject and a verb.
+       (e.g. "he drink a coffee.", "I wrote a book which make me rich.")
+  <li> <font color="#800000"><strong>RED</strong></font> ...
+       An arcitle is required.
+       (e.g. "this is pen.")<br>
+       (Note: Since this checking is rather fallacy and verbose,
+       it is disabled by default. Give <code>-Wall</code> option to enable this feature.)
+</ul>
+
+<p> Also <code>qq</code> accepts the following command line
+options:
+
+<p>
+<table border>
+<tr><td><strong>Option</strong></td><td><strong>Feature</strong></td></tr>
+<tr><td><code>-v</code></td>
+<td>Verbose mode. It displays the name of errors.</td></tr>
+<tr><td><code>-q</code></td>
+<td>Quiet mode. It doesn't display file names.</td></tr>
+<tr><td><code>-p</code></td>
+<td>Force it to recognize all files as plain text format.
+Each paragraph is separated with an empty line in plain text format.</td></tr>
+<tr><td><code>-l</code></td>
+<td>Force it to recognize all files as HTML format.</td></tr>
+<tr><td><code>-t</code></td>
+<td>Force it to recognize all files as LaTeX format.</td></tr>
+<tr><td><code>-s <i>pathname</i></code></td>
+<td>Specify the pathname of a system dictionary (dict.txt or dict.cdb).
+By default, it tries to find a dictionary file located at the same directory.</td></tr>
+</table>
+
+<p>
+The following options are for debugging purpose:
+<table border>
+<tr><td><strong>Option</strong></td><td><strong>Feature</strong></td></tr>
+<tr><td><code>-D  <i>debuglevel</i></code></td>
+f<td>Specify the debuglevel as integer.</td></tr>
+<tr><td><code>-S  <i>stage</i></code></td>
+<td>Specify the stage to which the process is performed.
+The default is <code>grammar</code> (to check grammatical error).
+Acceptable values are
+<code>token</code> (tokenize input files),
+<code>sentence</code> (split sentences),
+<code>pos0</code> (pos tagging phase 1), or
+<code>pos1</code> (pos tagging phase 2).
+</td></tr>
+<tr><td><code>-W  <i>type1,type2,...</i></code></td>
+<td>Specify which type of errors should be checked.
+Acceptable values are
+<code>sv1</code> (a subject and a verb placed across a prepotitional phrase),
+<code>sv2</code> (a subject and a verb placed adjacently),
+<code>sv3</code> (a subject and a verb in "there-be" type syntax), or
+<code>det</code> (determiner requirement),
+<code>plural</code> (numbers of nouns).
+Values should be separated with comma. 
+The default is <code>sv1,sv2,sv3,plural</code>.
+Value <code>all</code> is also accepted for specifying every type of errors.
+</td></tr>
+</table>
+
+<hr>
+<h3>Why I get unreasonable results?</h3>
+
+<p> The current version of Queequeg reports lots of false
+positives which should not be reported generally.
+
+<p> For example, a sentence "my paper clip" looks like consisting
+of a noun phrase. But actually an error is reported since this can
+also be regarded as "my paper clip[s]", where the last "s" is
+missing.  Also, a noun phrase "three additional links" also
+generates a number disagreement warning though, this is because a
+singular noun called "links" is contained in a system dictionary
+file.
+
+<p> Determiner checking tends to generate more false positives,
+because Queequeg don't know if a target noun is mass noun or not.
+Normally, material names such as "meat" or "water", or abstract
+nouns such as "information" need not take any article. However
+WordNet doesn't have this kind of information.  (Some dictionaries
+like COMLEX do have this, but I didn't use them because they
+cannot be freely distributed.)
+
+<hr>
+<h3>Bugs and TODOs</h3> <ul>
+  <li> Improve accuracy. Paranoia mode and normal mode should be separated.
+  <li> Must support user dictionaries.
+  <li> Warning for unknown words.
+  <li> Change warning colors on terminal.
+  <li> Ispell-like interface on Emacsen. Support Tkinter too.
+  <li> Port to Windows.
+  <li> Support collocation.
+  <li> <code>setup.py</code>.
+  <li> Source code comments.
+  <li> Make it faster.
+</ul>
+       
+
+<hr> <a name="tech"><h3>Technical Information</h3></a>
+
+<p> Queequeg identifies grammatical errors with pattern
+recognition based on simple finite automata (i.e. regexps) and
+unification of features assigned on each portion of an expression.
+It doesn't parse a sentence to earn speed and coverage.  The core
+part of checking is done in <code>constraint.py</code> and
+<code>unification.py</code>.
+
+<p> POS tagging is performed in two phases.  First it looks up
+dictionaries and obtains multiple candidates for each word
+(<code>sentence.py, dictionary.py</code>), then tries to fix
+several tags using regexp based pattern matching
+(<code>postagfix.py</code>).
+
+<p> We used a modified version of Penn Treebank tagset.  Plural
+form of pronouns (PRPS) and determiners (DTS) are extended so that
+Queequeg identifies the number of a noun group by looking the POS
+tag assigned to each noun.
+
+<P> Unlike other natural language systems, Queequeg cannot assume
+a given sentence is grammatical. It decreases the accuracy of POS
+tagging.
+
+<hr>
+<a name="license"><h3>Terms and Conditions</h3></a>
+<p> Queequeg comes with ABSOLUTELY NO WARRANTY.
+This software is distributed under the GNU General Public License.
+
+<hr>
+<h3>Author</h3>
+<p> <a href="http://www.unixuser.org/~euske/">Yusuke Shinyama</a>
+<img src="address.png">
+<p>
+We need more testers!
+Feel free to send us any comments or bug reports.
+
+
+<hr>
+<address>Yusuke Shinyama</address>
+</body>
+</html>

@@ -1,0 +1,154 @@
+#!/usr/bin/env python
+# -*- Python -*-
+
+# $Id: qq,v 1.2 2003/07/02 06:38:39 euske Exp $
+# Queequeg: an English grammar checker
+# by Yusuke Shinyama <yusuke at cs . nyu . edu>
+
+import sys, getopt
+import pstring
+import os
+import os.path
+
+
+from dictionary import Dictionary
+from abstfilter import AbstractFeeder, AbstractFilter, AbstractConsumer
+from document import HTMLProcessor, TexProcessor, PlainTextProcessor
+from sentence import TextTokenizer, SentenceSplitter, POSTagger
+from postagfix import POSTagFixer
+from output import TerminalOutput
+from constraint import ConstraintChecker
+
+
+STAGES = { "token":0, "sentence":1, "pos0":2, "pos1":3, "grammar":4 }
+WARNTYPES = [ "sv1", "sv2", "sv3", "det", "plural" ]
+
+
+def get_dictpath():
+  p = os.environ.get("SYSTEM_DICT")
+  if p: return p
+  dir = os.path.dirname(os.path.realpath(sys.argv[0]))
+  for p in [ dir+"/dict.cdb", dir+"/dict.txt" ]:
+    if os.path.exists(p):
+      return p
+  return None
+
+
+class DebugConsumer(AbstractConsumer):
+  def feed(self, x):
+    print repr(x)
+    return
+
+  
+def check_file(fname, verbosity, docproc, debuglevel, dict, stage, warntypes):
+  if fname == "-":
+    fp = sys.stdin
+  else:
+    fp = file(fname)
+  if 0 <= verbosity:
+    print "-- %s" % fname
+    
+  if not docproc:
+    docproc = PlainTextProcessor
+    if fname.endswith(".tex"):
+      docproc = TexProcessor
+    elif fname.endswith(".htm") or fname.endswith(".html"):
+      docproc = HTMLProcessor
+
+  # grammar: 4
+  if 4 <= stage:
+    pipeline = ConstraintChecker(TerminalOutput(verbosity), warntypes, debuglevel)
+  else:
+    pipeline = DebugConsumer()
+    
+  # pos1: 3
+  if 3 <= stage:
+    pipeline = POSTagFixer(pipeline)
+  # pos0: 2
+  if 2 <= stage:
+    pipeline = POSTagger(dict, pipeline)
+  # sentence: 1
+  if 1 <= stage:
+    pipeline = SentenceSplitter(pipeline)
+
+  pipeline = docproc(TextTokenizer(pipeline))
+  pipeline.read(pstring.PFile(fp))
+  fp.close()
+  return
+
+
+def usage():
+  print "usage: qq [-v|-q] [-p|-l|-t] [options] [file ...]"
+  print
+  print "Options:"
+  print "       -v                 Verbose"
+  print "       -q                 Quiet"
+  print
+  print "       -p                 Process plaintext files"
+  print "       -l                 Process HTML files"
+  print "       -t                 Process LaTeX files"
+  print "       -s system          Specify a system dictionary"
+  print "       -u userdict        Specify a user dictionary"
+  print
+  print "Other options:"
+  print "       -D debuglevel      Change the debug level"
+  print "       -S {token|sentence|pos0|pos1|grammar}"
+  print "                          Specify the stage"
+  print "       -W type1,type2,... Specify the warning types"
+  print "                          {sv1, sv2, sv3, det, plural}"
+  sys.exit(2)
+  return
+
+if __name__ == "__main__":
+  try:
+    (opts, args) = getopt.getopt(sys.argv[1:], "vqplts:u:D:S:W:")
+  except getopt.GetoptError:
+    usage()
+
+  # defaults
+  verbosity = 0
+  default_docproc = None
+  debuglevel = 0
+  stage = STAGES["grammar"]
+  warntypes = [ "sv1", "sv2", "sv3", "plural" ]
+  systemdict = get_dictpath()
+  userdict = "~/.qquserdict"
+  
+  for (k,v) in opts:
+    if k == "-v":
+      verbosity = 1
+    elif k == "-q":
+      verbosity = -1
+    elif k == "-p":
+      default_docproc = PlainTextProcessor
+    elif k == "-l":
+      default_docproc = HTMLProcessor
+    elif k == "-t":
+      default_docproc = TexProcessor
+    elif k == "-s":
+      systemdict = v
+    elif k == "-u":
+      userdict = v
+    elif k == "-D":
+      debuglevel = int(v)
+    elif k == "-S":
+      try:
+        stage = STAGES[v]
+      except:
+        usage()
+    elif k == "-W":
+      if v == "all":
+        warntypes = WARNTYPES
+      else:
+        warntypes = v.split(",")
+
+  if not systemdict:
+    print "Cannot find any dictionary. Abort."
+    sys.exit(3)
+    
+  if not args:
+    args = ["-"]
+
+  dict = Dictionary(systemdict, userdict)
+  for fname in args:
+    check_file(fname, verbosity, default_docproc, debuglevel, dict, stage, warntypes)

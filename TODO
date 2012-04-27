@@ -1,0 +1,13 @@
+$Id: TODO,v 1.2 2003/07/02 06:38:39 euske Exp $
+
+TODO for Queequeg
+
+ * Emacs interface like ispell/aspell
+ * Improving the accuracy (POS tagging/chunking)
+ * collocation support
+ * mass noun support in determiner checking
+ * suggest preposition/verb/noun combination
+ * porting to Windows (via Tkinter-face)
+
+ user dictionary support
+ setup.py

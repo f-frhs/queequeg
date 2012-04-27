@@ -1,0 +1,889 @@
+% HLT 2002 - Automatic Paraphrase Acquisition from News Articles
+%
+% $Id: t1.tex,v 1.1.1.1 2003/07/01 23:28:28 euske Exp $
+
+% I attached PDF file with this message. 
+% Or you can download it from the web:
+%	http://www.unixuser.org/~euske/tmp/v2.pdf
+%
+% I wrote all parts except references.
+%
+% mainly rewritten parts:
+% * Survey (added a little). Is explanation of Torisawa's work okay?
+% * Method overview (added an example ``what happens if we don't use
+%        IE patterns?'', and add a figure to explain sudo's method)
+% * Details of experiments (added metrics and the order is changed).
+% * Evaluation and Discussion (almost completely revised,
+%                          I believe it's much better now)
+
+
+
+\documentclass{hlt2002}
+\usepackage{times}
+\usepackage{graphics}
+
+
+\begin{document}
+
+\title{Automatic Paraphrase Acquisition from News Articles}
+\numberofauthors{4}
+\author{
+\alignauthor Yusuke Shinyama \\
+\affaddr{Department of Computer Science}\\
+\affaddr{New York University}\\
+\affaddr{715 Broadway, 7th floor, New York, NY, 10003}\\
+\email{yusuke@cs.nyu.edu}
+\alignauthor Satoshi Sekine \\
+\affaddr{Department of Computer Science}\\
+\affaddr{New York University}\\
+\affaddr{715 Broadway, 7th floor, New York, NY, 10003}\\
+\email{sekine@cs.nyu.edu}
+\alignauthor Kiyoshi Sudo \\
+\affaddr{Department of Computer Science}\\
+\affaddr{New York University}\\
+\affaddr{715 Broadway, 7th floor, New York, NY, 10003}\\
+\email{sudo@cs.nyu.edu}
+}
+\additionalauthors{Additional authors: Ralph Grishman \\
+email: {\texttt{grishman@cs.nyu.edu}}}
+
+%\date{\today}
+
+\maketitle
+
+\begin{abstract}
+
+Paraphrases play an important role in the variety and complexity
+of natural language documents. However, they add to the difficulty
+of natural language processing. Here we describe a procedure for
+obtaining paraphrases from news articles.  Articles derived from
+different newspapers can contain paraphrases if they report the
+same event on the same day.  We exploit this feature by using
+Named Entity recognition.  Our approach is based on the assumption
+that Named Entities are preserved across paraphrases. We applied
+our method to articles of two domains and obtained notable
+examples.  Although this is our initial attempt at automatically
+extracting paraphrases from a corpus, the results are promising.
+
+\end{abstract}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section{Introduction}
+
+Expressing one thing in other words, or ``paraphrasing'', plays an
+important role in the variety and complexity of natural language
+documents.  One can express a single event in thousands of ways in
+natural language sentences. A creative writer uses lots of
+paraphrases to state a single fact. This greatly adds to the
+difficulty of natural language processing.
+
+Table \ref{table:news} shows how the headlines differ in several
+newspapers.  Although every expression reports the same event --
+Bush's decision for government funding for people in New York --
+each expression differs considerably from the others.
+
+\begin{table*}
+\centering {\small
+\begin{tabular}{lll}
+No & Newspaper       & Headline \\ \hline
+%ABCNEWS         & Bush Decides Geneva Convention Applies to Taliban \\
+%AP              & Bush Makes Decision on Detainees \\
+%CNN             & Taliban detainees to get Geneva Conventions protection \\
+%NYTimes         & Geneva Convention to Be Applied to Captured Taliban Fighters \\
+%Reuters         & Bush Applies Geneva Convention to Taliban Captives \\
+%\hline
+1. & CNN             & Bush says he'll deliver \$20 billion to NY \\
+2. & New York Times  & Bush, in New York, Affirms \$20 Billion Aid Pledge \\
+3. & Washington Post & Bush Reassures New York of \$20 Billion \\
+%% 4. & USA Today       & Bush dons his GOP-fundraising hat \\
+\end{tabular}
+}
+\caption{Expressions of the same event}
+\label{table:news}
+\end{table*}
+
+% …違う…。
+% いくつかのアプリケーションでは、このようなパラフレーズを
+% 理解する必要がある。けれどもそれはむずかしい。
+% そのためこのような表現をまとめた、パラフレーズのデータベースをつくりたい。
+% けれども、パラフレーズは非常に種類が多い。
+% しかも何をパラフレーズとみなすかは実はドメインによって違う。
+% だから一般的なパラフレーズをつくるのはむずかしい。
+% けれども、特定ドメインのパラフレーズを自動的に抽出できれば、
+% それで役立つ場合はたくさんある。
+% 我々はそういうシステムをつくりたい…
+
+Many natural language applications, such as Information Retrieval,
+Machine Translation, Question Answering, Text Summarization, or
+Information Extraction, need to handle these expressions
+correctly.  Because analyzing these expressions at semantic level
+is a rather difficult task, we hope to build a paraphrase database
+to find expressions which have the same meaning. However, building
+such databases by hand is still difficult. There are two reasons:
+the first reason is that there are too many possible language
+expressions for someone to come up with. Even if several people
+work on this task, it is still laborious to cover many common
+expressions. The second reason is that expressions considered as
+paraphrases are different from domain to domain.  Even if two
+expressions can be regarded as having the same meaning in a
+certain domain, it is not possible to generalize them to other
+domains.
+
+So we are trying to create a system that automatically acquires
+paraphrases from given corpora of a specific domain. Even though
+their usage is limited to a certain domain, it is still useful for
+many applications. In this paper, we describe an approach to
+automatic paraphrase acquisition from corpora. Our main focus is
+Information Extraction (IE). In an IE application, a system uses
+patterns to capture events which are relevant to a certain
+domain. Although there have been several efforts to obtain such
+patterns automatically, little work has addressed the problem of
+capturing the semantic knowledge of such patterns, which is
+crucial for IE. Using a paraphrase database, we can connect one
+pattern to another. We expect this will reduce the cost of
+creating IE knowledge by hand. Although our approach aims to
+collect paraphrases for IE applications, our method can be applied
+to other purposes also.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section{Challenges}
+
+To acquire paraphrases automatically, we focused on news articles
+that describe the same event. Take a look at the examples in Table
+\ref{table:news}. These headlines are taken from several news
+articles on the same day. If we can find these articles in
+different newspapers on a certain day, it is likely that they
+contain similar expressions; i.e. paraphrases.
+
+However, the difficulty of paraphrase acquisition is to recognize
+that one sentence has the same meaning as another. These
+expressions may differ from the others not only in lexical
+properties, but also in syntactic features. By looking at Table
+\ref{table:news}, one can easily observe that a simple criterion
+is not enough to find paraphrases.
+
+Our basic concept is to use Named Entity (NE) to find such
+expressions reporting the same event. NE is a proper expression
+such as names of organizations, persons, locations, dates, or
+numerical expressions \cite{grishman:96}. In Table
+\ref{table:news}, ``Bush'', ``New York'' and ``\$20 billion'' are
+regarded as NEs. Since they are indispensable to report an event,
+NEs are often preserved across different newspapers.  Therefore we
+can expect that if two sentences share several comparable NEs, it
+is likely that they are reporting the same event.  This likelihood
+increases as the number of NEs shared by two sentences increases.
+Here, using NE recognition techniques, headlines 2. and 3. can be
+generalized as follows:
+
+\begin{itemize}
+\item 	Bush, in New York, Affirms \$20 Billion Aid Pledge \\
+	$\Rightarrow$ {\it PERSON$_1$}, in {\it LOCATION$_1$}, 
+	affirms {\it MONEY$_1$} Aid Pledge
+\item 	Bush Reassures New York of \$20 Billion \\
+	$\Rightarrow$ {\it PERSON$_1$} Reassures {\it LOCATION$_1$} of 
+	{\it MONEY$_1$}
+\end{itemize}
+
+This way, we can find the comparable expressions, or paraphrases
+from corpora by using NEs.  So far we have applied our method to
+two domains in Japanese newspapers and obtained some notable
+examples.
+
+There are a few approaches for obtaining paraphrases
+automatically.  Barzilay et al. used parallel translations derived
+from one original document \cite{barzilay:01}. They targeted
+literary works and used word alignment techniques developed for
+MT. However the syntactic variety of the resultant expressions is
+limited since they used only part-of-speech tags to identify the
+syntactic properties.  In addition, compared with our method using
+newspapers, their resources are relatively scarce.  Torisawa et
+al. proposed a learning method for automatic paraphrasing of
+Japanese noun phrases \cite{torisawa:2001}.  But this is also
+limited to a certain type of noun phrases.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section{Algorithm}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\subsection{Overview}
+
+As we stated in the previous section, our approach is based on the
+following assumption: NEs are preserved across paraphrases. So if
+the portions of each sentence in the articles share several
+comparable NEs, they are likely to be expressing the same meaning;
+in other words, they are paraphrases. The expectation increases as
+the number of NEs shared by the portions increases.
+
+Paraphrase acquisition goes as follows. First we find articles in
+a certain domain from two newspapers. We use an existing IR system
+to obtain articles from a given class of events, such as murders
+or personnel affairs.  Then we find pairs of articles which report
+the same event. In this stage we use a TF/IDF based method
+developed for Topic Detection and Tracking (TDT). Next we compare
+all the sentences in each article to find pairs of sentences
+sharing comparable NEs.  Then we extract appropriate portions
+of sentences using a dependency tree.  A dependency tree can be
+used later to reconstruct a original phrase.  If the number of
+comparable NEs which both portions contain exceeds a certain
+threshold, we adopt them as paraphrases.  Finally we generalize an
+NE as a variable in retrieved phrases so that these phrases can be
+applied to other sentences. The overall process is illustrated in
+Figure \ref{fig:concept}.
+
+\begin{figure}
+\centering
+\includegraphics[width=1.0\linewidth]{fig/concept.eps}
+\caption{Overall method of paraphrase acquisition}
+\label{fig:concept}
+\end{figure}
+
+
+Additionally, we need to consider the domain of the
+expressions. Otherwise our method yields a lot of noise.  For
+example, two expressions ``{\it Bush has expressed his confidence
+in Koizumi's reforms}'' and ``{\it Bush and Koizumi watched a
+demonstration of horseback archery}'' are both found in the
+articles from the same day and both contain the comparable NEs ({\it
+Bush} and {\it Koizumi}), but they are not paraphrases. So we try
+to filter out such noise using a set of IE patterns obtained from
+the same articles in advance. In this way we can limit our
+patterns to only those concerning a certain domain.
+
+Sudo et al. described a procedure for automatically gathering
+common patterns appearing frequently in a set of articles about a
+given topic \cite{sudo:01}.  Each IE pattern has slots which can
+be filled by NEs.  For example, the sentence ``{\it Vice President
+Osamu Kuroda of Nihon Yamamura Glass Corp. was promoted to
+President.}'' contains four patterns found for the personnel
+domain, as shown in Figure \ref{fig:sudo}. NEs in these patterns
+are generalized into slots which hold the types of the NEs and the
+case roles of each node are preserved.  We apply these obtained
+patterns to the articles itself, and then find paraphrases only
+among those which match any of the patterns.  This means we find
+paraphrases among these IE patterns.  Actually this is done by
+linking two IE patterns as paraphrases.  These links form a set of
+equivalence classes, in which each pattern conveys the same
+meaning (See Figure \ref{fig:experiment}).
+
+\begin{figure*}
+\centering
+\includegraphics[width=0.7\linewidth]{fig/sudo.eps}
+\caption{IE Pattern Extraction}
+\label{fig:sudo}
+\end{figure*}
+
+%\begin{table}
+%{\small \centering \begin{tabular}{lp{2in}} \hline
+%\parbox{0.7in}{Pattern 1 \\ (Frequency: 9)}
+%	& [{\it someone}] makes [{\it the}] personnel decision 
+%	  [{\it that}] {\it POST$_1$} {\it PERSON$_1$} [{\it is}] promoted \\ 
+%	& ({\it PERSON$_1$ POST$_1$ ga shoukaku suru jinji wo kimeru}) \\
+%\hline
+%\parbox{0.7in}{Pattern 2 \\ (Frequency: 5)}
+%	& {\it POST$_1$} {\it PERSON$_1$} withdraws \\
+%	& ({\it PERSON$_1$ POST$_1$ ha shirizoku}) \\ 
+%\hline
+%\parbox{0.7in}{Pattern 3 \\ (Frequency: 2)}
+%	& [{\it someone}] announces [{\it that someone is}]
+%	  promoted [{\it to}] {\it POST$_1$} \\ 
+%	& ({\it POST$_1$ ni shoukaku suru jinji wo happyou suru}) \\
+%\hline
+%... & \\
+%\end{tabular}
+%}
+%\caption{Obtained IE patterns (in Japanese)}
+%\label{table:ksp}
+%\end{table}
+
+\begin{figure}
+\centering
+\includegraphics[width=0.9\linewidth]{fig/experiment.eps}
+\caption{Actual experiment using IE patterns}
+\label{fig:experiment}
+\end{figure}
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\subsection{Details}
+
+Now we describe the details.  Our method can be divided into 4
+stages:
+
+\subsubsection*{1) Preprocessing articles}
+
+First we obtain pairs of articles of a certain domain from two
+newspapers, as a source of both IE patterns and paraphrases. First
+we obtain relevant articles for a domain from one newspaper, and
+then we find articles which report the same event from the other
+newspaper. In this experiment, we used a stochastic-based IR
+system by Murata et al. \cite{Murata:1994} to get articles of a
+specified domain.  We pick up the most relevant 300 articles for a
+domain. For each relevant article from one of the newspapers, we
+search for an article corresponding to the first article from the
+other newspaper. This is done by calculating the similarity
+between two articles and taking the one whose similarity is the
+best. Since this task is very similar to the task defined in TDT
+\cite{wayne:98}, we used a technique developed in TDT.  We
+implemented this part based on the University of Massachusetts
+system, which worked the best for our purpose \cite{papka:99}.
+The similarity $S_a(a_1, a_2)$ of two articles $a_1$ and $a_2$ is
+defined as follows:
+
+\begin{equation}
+S_a(a_1, a_2) = \cos(W_1, W_2)
+\end{equation}
+\begin{equation}
+W^i = TF(w_i) * IDF(w_i)
+\end{equation}
+\begin{equation}
+TF(w_i)	= \frac{f(w_i)}{f(w_i) + 0.5 + 1.5 * \frac{dl}{avgdl}}
+\end{equation}
+\begin{equation}
+IDF(w_i) = \frac{\log(\frac{C + 0.5}{df(w_i)})}{\log(C + 1)}
+\end{equation}
+
+Here $W_1$ and $W_2$ are vectors with elements $W_1^i$ and $W_2^i$
+for article $a_1$ and $a_2$, with dimension equal to the number of
+NEs in the corpus. $f(w_i)$ is the number of times NE $w_i$ occurs
+in the article. $df(w_i)$ is the document (article) frequency,
+which is the number of articles containing the NE $w_i$. $dl$ is
+the document length. $C$ is the number of articles, and $avgdl$ is
+the average article length.
+
+We apply this metric to the NEs appearing in an article and adopt
+the article pairs whose similarity is above a certain threshold.
+In this stage we use a simple dictionary-based NE tagging system
+to pick up NEs, instead of the one used in later stage.  This
+system picks up only words which are not contained in a common
+noun dictionary and doesn't recognize the type of NEs.
+
+
+\subsubsection*{2) Acquiring IE patterns}
+
+Next we run the IE pattern acquisition system for the pairs of
+articles \cite{sudo:01}. This system performs NE tagging and
+dependency analysis, and picks several paths of nodes in a
+dependency tree as IE patterns. In this experiment, we use IE
+patterns which appear more then once in the corpus and contain at
+lease one NE.
+
+\subsubsection*{3) Preprocessing sentences}
+
+Now we take a closer look at a pair of articles which report the
+same event. We mark all NEs using an statistical NE tagging system
+\cite{Uchimoto:acl2000}.  Next we apply a dependency analyzer to
+the sentences. Here Juman and KNP were used as the morphological
+analyzer and dependency analyzer respectively. Thus we have a set
+of NE-tagged dependency trees for each article.  Here we apply the
+obtained IE patterns to the sentences. We drop a sentence that
+doesn't match any of the patterns. For sentences which do match
+one or more patterns, an instance of each pattern is created and
+attached to the sentence.  The variables in these patterns are
+filled with the actual NEs.
+
+This stage is illustrated in Figure \ref{fig:dep4}.  Suppose
+sentences A and B contain paraphrases.  Sentence A matches pattern
+1 and sentence B matches pattern 2.  These patterns are attached
+to the sentences and each slot in the patterns is filled with the
+actual NE (here, {\it POST$_1$} slot is filled with the actual NE
+{\it ``President''}).
+
+
+\subsubsection*{4) Extracting paraphrases}
+
+Now we can get paraphrases. First we take pairs of similar
+sentences. To penalize frequently occurring NEs, this is done by
+calculating TF/IDF based similarity in terms of comparable NEs for
+all possible pairs of sentences. Sentence similarity $S_s(s_1,
+s_2)$ of sentence $s_1$ and $s_2$ is defined as follows:
+
+\begin{equation}
+S_s(s_1, s_2) = \cos(W_1, W_2)
+\end{equation}
+\begin{equation}
+W^i = TF(w_i) * IDF(w_i)
+\end{equation}
+\begin{equation}
+TF(w_i) = f(w_i)
+\end{equation}
+\begin{equation}
+IDF(w_i) = \log(\frac{C}{df(w_i)})
+\end{equation}
+
+Here $W_1$ and $W_2$ are vectors with elements $W_1^i$ and $W_2^i$
+for article $s_1$ and $s_2$.  $f(w_i)$ is the number of NEs which
+are comparable to $w_i$ in the sentence. $df(w_i)$ is the number
+of sentences in the article which contain NEs that is comparable
+to $w_i$. $C$ is the number of NEs in the article.
+
+We use substring matching to compare two NEs. This is because
+several NEs referring to one entity can take various forms, such as
+``Bush'', ``George W. Bush'', or ``Mr. Bush''. Since we use Japanese
+newspapers for this experiment, we regard two NEs as comparable if
+one begins with the half of the beginning string of the other.
+\footnote{In Japanese, 
+a name of a person can take the following forms:
+``Koizumi'', ``Koizumi Jun'ichirou'', ``Koizumi-san'' etc.}
+
+Then we take pairs of sentences whose similarity is above a
+certain threshold.  If two IE pattern attached to the two sentences
+share the same number of comparable NEs, we link the two patterns as
+paraphrases.
+
+In Figure \ref{fig:dep4}, each sentence in the pair shares four
+comparable NEs ({\it ``Nihon Yamamura Glass''}, {\it
+``President''}, {\it ``Vice President''}, and {\it ``Osamu
+Kuroda''}).  Moreover, the variables in pattern 1 and 2 also have
+the same type ({\it POST$_1$}) and content ({\it ``President''}).
+So we can conclude these two patterns are paraphrases.
+
+
+\begin{figure*}
+\centering
+\includegraphics[width=0.7\linewidth]{fig/dep4.eps}
+\caption{Sample Paraphrase Extraction}
+\label{fig:dep4}
+\end{figure*}
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section{Experiments}
+
+We used one year of two Japanese newspapers (Mainichi and Nikkei)
+in this experiment. First we obtained the most relevant 300
+articles from Mainichi newspaper (total of 111373 articles) for
+two domains, arrest events and personnel affairs (hiring and
+firing of executives). The descriptions and narratives we gave to
+the IR system are shown in Table \ref{table:ir}.  Next we find the
+corresponding articles of Nikkei newspaper from 181086 articles
+(See Table \ref{table:exp0}).  The pairs whose similarity is below
+a certain threshold were dropped at this time.  We got 294 pairs
+of articles in arrest events, and 289 pairs of articles in
+personnel affairs.  Next we ran an IE pattern acquisition system
+for those articles. After dropping the patterns which appear only
+once, we got 725 patterns and 157 patterns respectively. Then we
+ran the paraphrase acquisition system for each pair or articles,
+and finally got total 136 pairs of paraphrases (a link between two
+IE patterns). The number of article pairs, obtained IE patterns
+and obtained paraphrases pairs are shown in Table
+\ref{table:exp1}.
+
+\begin{table}
+\centering
+\begin{minipage}[c]{0.8\linewidth}
+{\bf Arrest Events:} \\ {\small
+\begin{tabular}{|l|p{2in}|} \hline
+Description	& Hiring and firing of executives \\ \hline
+Narrative	& Domestic or international articles about
+		  hiring and firing of executives. 
+		  Chairman, President, 
+		  Director, CEO, COO, CFO or equivalent positions
+		  are targeted. \\ \hline
+\end{tabular}} \vspace{1mm} \\
+{\bf Personnel Affairs:} \\ {\small
+\begin{tabular}{|l|p{2in}|} \hline
+Description	& Arresting robbery suspects \\ \hline
+Narrative	& Articles reporting arrest of robbery suspects
+		  or criminals. Multiple crimes such as 
+		  murder accompanied by robbery or prior
+		  crimes of robbers should be included. \\ \hline
+\end{tabular}} \\
+\end{minipage}
+\caption{Query Used for Article Retrieval}
+\label{table:ir}
+\end{table}
+
+\begin{table}
+\centering
+\begin{tabular}{|l|l|l|} 
+\hline
+Newspaper & Mainichi & Nikkei \\ \hline
+\hline
+Articles  & 111373   & 181086 \\ 
+\hline
+\end{tabular} \\
+\caption{Articles Used for the Experiment}
+\label{table:exp0}
+\end{table}
+
+\begin{table}
+\centering
+\begin{tabular}{|l|l|l|} 
+\hline
+Domain & Arrest events & Personnel affairs \\ \hline
+\hline
+{\small Article pairs}    & 294 & 289 \\
+{\small Sentences} 	& 4445 & 5962 \\ 
+{\small Obtained IE patterns}    & 725 & 157 \\ 
+{\small Obtained paraphrase links} & 53 & 83 \\
+\hline
+\end{tabular} \\
+\caption{Article pairs and IE patterns}
+\label{table:exp1}
+\end{table}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section{Evaluation}
+
+We evaluated our results in two respects: precision and coverage. To
+measure them, first we need to prepare the answer data. This is done
+by manually classifying the IE patterns for each domain. The
+criteria of classification are the following:
+
+\begin{enumerate}
+\item Do they describe the same event?
+\item If we use them in an actual IE application, do they capture
+the same information?
+\end{enumerate}
+
+For example, the following two patterns are regarded as the same
+class
+\footnote{Note that these patterns are originally written in
+Japanese and include zero pronouns, which are shown as $\phi$.}
+:
+
+\begin{itemize}
+\setlength{\itemsep}{-1mm}
+\item {} {\it ORGANIZATION$_1$} decides $\phi$. \\
+	({\it ORGANIZATION$_1$ ha kettei suru.})
+\item {} {\it ORGANIZATION$_1$} confirms $\phi$. \\
+	({\it ORGANIZATION$_1$ ha katameru.})
+\end{itemize}
+
+In the above example, both describe the same event (decision) and
+the information captured by them is the same (which organization
+decides).
+
+However, the following two patterns are not in the same class:
+
+\begin{itemize}
+\setlength{\itemsep}{-1mm}
+\item {} $\phi$ is promoted to {\it POST$_1$}. \\
+	({\it POST$_1$ ni shoukaku suru})
+\item {} {\it POST$_1$} is promoted. \\
+	({\it POST$_1$ ha shoukaku suru})
+\end{itemize}
+
+Although these patterns describe the same event (promotion), the
+information they capture is different. The former pattern captures
+the new post someone is promoted {\it to}. However the latter
+captures the old post someone is promoted {\it from}. So we put
+these patterns in different classes.  This way, we get several
+clusters of patterns for each domain. We take only patterns which
+form a cluster and drop single-element patterns which do not have
+a paraphrase among the patterns. The result of manual
+classification in this experiment is shown in Table
+\ref{table:evalresult}.  We got 111 distinct clusters for arrest
+events and 20 for personnel affairs.
+
+\begin{table}
+\centering
+\begin{tabular}{|l|l|l|}
+\hline
+Domain & Arrest events & Personnel affairs \\ \hline
+\hline
+{\small IE patterns}		& 363 & 129 \\
+{\small (forms a cluster)}	&    &    \\
+{\small Clusters}		& 111 & 20 \\
+\hline
+\end{tabular} \\
+\caption{Manually Classified Patterns}
+\label{table:evalresult}
+\end{table}
+
+Now we describe how to measure precision and coverage.  If the two
+patterns linked by our procedure are both in the same cluster, it
+is correct; otherwise, it is incorrect. Thus we measured the
+precision by counting how many paraphrase links are correct. The
+results are shown in Table \ref{table:precision}.  In arrest
+events domain, we got correct 26 out of 53 links and the
+precision was 49\%.  In the personnel affairs domain, we got correct
+78 out of 83 links and the precision was 94\%. We got quite
+high precision in personnel affairs, although it is not so high in
+the arrest domain. We will discuss the difference in the later
+section.  Some examples of obtained correct and incorrect
+paraphrases are shown in Figure \ref{fig:resultex}.
+
+% 将来的には
+
+% We can observe the precision in arrest event
+% is not so high. This is partly because the IE patterns in arrest
+% event are more varied than those in personnel affairs. We will
+% discuss this point more precisely in Section \ref{sec:discussion}.
+
+\begin{table}
+\centering
+\begin{tabular}{|l|l|l|}
+\hline
+Domain & Arrest events & Personnel affairs \\ \hline
+\hline
+{\small Obtained links (yield)}		& 53 & 83 \\
+{\small Correct links}		& 26 & 78 \\
+{\small Precision}		& 49\% & 94\% \\
+\hline
+\end{tabular} \\
+\caption{Precision of paraphrase links}
+\label{table:precision}
+\end{table}
+
+Next we define the coverage, how well the system obtains all the
+necessary links. This is done by calculating how many additional
+links are necessary to connect all the patterns in every
+cluster. See Figure \ref{fig:eval}.  In this figure, cluster 1 has
+four obtained links. But the cluster is split into two
+subclusters. So we need at least one additional link to unify
+these subclusters. Therefore, the number of additional links
+necessary in cluster 1 is 1. In cluster 2, all the patterns form
+one cluster, so no further link is needed.  In cluster 3, there
+are four unconnected subclusters. So we need at least three
+additional links to unify these subclusters.  In this way we can
+calculate the total number of additional links necessary $L$ as:
+
+\begin{equation}
+L = \sum^{n}{(s_i - 1)}
+\end{equation}
+
+Here $s_i$ is the number of subclusters in cluster $i$.  $n$ is
+the number of clusters.
+
+\begin{figure}
+\centering
+\includegraphics[width=1.0\linewidth]{fig/eval.eps}
+\caption{Evaluation of Coverage}
+\label{fig:eval}
+\end{figure}
+
+The smaller the value of $L$, the more coverage we get, which
+means the clusters obtained are properly formed. To normalize this
+value, we use the total number of the necessary links $M$ to make
+the manually created clusters. This is calculated by summing the
+number of the links necessary to connect all the patterns in each
+cluster.  So the definition of the coverage $C$ is:
+
+\begin{equation}
+C = 1 - \frac{L}{M}
+\end{equation}
+
+Here $M$ is calculated as
+\begin{equation}
+M = \sum^{n}{(p_i - 1)}
+\end{equation}
+where $p_i$ is the number of the patterns in cluster $i$.
+
+The results are shown in Table \ref{table:coverage}.  In the
+arrest domain, links were discovered in 6 of the 111 clusters. 230
+additional links would be needed to connect the patterns within
+all the clusters. The coverage in the arrest domain was 9\%, which
+is not high and we will also discuss this problem in the next
+section. In the personnel affairs domain, links were discovered in
+5 of the 20 clusters. 57 additional links would be needed
+to connect the patterns within all the clusters. The coverage in
+the personnel affairs domain was 47\%.
+
+\begin{table}
+\centering
+\begin{tabular}{|l|l|l|}
+\hline
+Domain & Arrest events & Personnel affairs \\ \hline
+\hline
+{\small Clusters Obtained}	& 6   & 5 \\ 
+{\small Additional links necessary $L$}	& 230 & 57 \\ 
+{\small Total necessary links $M$}	& 252 & 109 \\ 
+{\small Coverage}               & 9\% & 47\% \\ 
+\hline
+\end{tabular} \\
+\caption{Coverage over paraphrase links}
+\label{table:coverage}
+\end{table}
+
+
+%%%%%%%%%%%%%%%
+
+\begin{figure}[t]
+\begin{center}
+\fbox{
+\begin{minipage}[c]{0.9\linewidth}
+{\bf Arrest events}
+
+Correct: \vspace{-2mm}
+\begin{itemize}
+\setlength{\itemsep}{-1mm}
+\item {} {\it ORGANIZATION$_1$} arrests $\phi$. \\
+	{\it \small (ORGANIZATION$_1$ ha taiho suru.)}
+\item {} the investigation authority of {\it ORGANIZATION$_1$} arrests $\phi$. \\
+	{\it \small (ORGANIZATION$_1$ sousa toukyoku ha taiho suru.)}
+\end{itemize}
+\begin{itemize}
+\setlength{\itemsep}{-1mm}
+\item {} {\it PERSON$_1$} admits $\phi$. \\
+	{\it \small (PERSON$_1$ ha mitomeru.)}
+\item {} {\it PERSON$_1$} testifies $\phi$. \\
+	{\it \small (PERSON$_1$ ha kyoujutsu suru.)}
+\end{itemize}
+
+Incorrect: \vspace{-2mm}
+\begin{itemize}
+\setlength{\itemsep}{-1mm}
+\item {} {\it PERSON$_1$} is arrested. \\
+	{\it \small (PERSON$_1$ ha taiho sareru.)}
+\item {} {\it PERSON$_1$} conspires. \\
+	{\it \small (PERSON$_1$ ha kyoubou suru.)}
+\end{itemize}
+
+{\bf Personnel affairs}
+
+Correct: \vspace{-2mm}
+\begin{itemize}
+\setlength{\itemsep}{-1mm}
+\item {} $\phi$ is promoted to {\it POST$_1$}. \\
+	{\it \small (POST$_1$ ni shoukaku suru.)}
+\item {} the promotion to {\it POST$_1$} is decided. \\
+	{\it \small (POST$_1$ no shoukaku wo kettei suru.)}
+\end{itemize}
+
+\begin{itemize}
+\setlength{\itemsep}{-1mm}
+\item {} {\it ORGANIZATION$_1$} decides $\phi$. \\
+	{\it \small (ORGANIZATION$_1$ ha kettei suru.)}
+\item {} {\it ORGANIZATION$_1$} confirms $\phi$. \\
+	{\it \small (ORGANIZATION$_1$ ha katameru.)}
+\end{itemize}
+
+Incorrect: \vspace{-2mm}
+\begin{itemize}
+\setlength{\itemsep}{-1mm}
+\item {} {\it PERSON$_1$} is promoted. \\
+	{\it \small (PERSON$_1$ ha shoukaku suru.)}
+\item {} {\it PERSON$_1$} hold successively $\phi$. \\
+	{\it \small (PERSON$_1$ ha rekinin suru.)}
+\end{itemize}
+
+\end{minipage}
+}
+\end{center}
+\caption{Examples of obtained paraphrases} 
+\label{fig:resultex}
+
+(Note that these patterns are originally written in Japanese and
+include zero pronouns.)
+\end{figure}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section{Discussion}
+\label{sec:discussion}
+
+Although this is our initial attempt at automatically extracting
+paraphrases from a corpus, the results are promising. In
+particular, we obtained expressions which are different in
+structure, such as ``$\phi$ was promoted to {\it
+POST$_1$}'' and ''the promotion to {\it POST$_1$} was decided''.
+We also obtained expressions which can be regarded as paraphrases
+not in general, but in this particular domain. For example, {\it
+to admit (mitomeru)} and {\it to testify (kyoujutsu suru)} are
+generally not regarded as synonyms.  But this semantic
+relationship is quite useful in this domain.
+
+However, many problems remain. We reviewed our results in terms of
+the precision and the coverage:
+
+\subsection*{Precision}
+
+% ひとつはNEの数がすくないこと。
+% もうひとつは
+
+Currently the precision in arrest events is not high.  The main
+reason is that the average number of NEs in arrest events is
+low. This makes the obtained IE patterns short.  Generally the
+more NEs contained in a pair of patterns, the more likely that they are
+paraphrases. However, only 41 patterns out of 725
+patterns in arrest events domain contained two or more NEs.
+Additionally, the expressions used in this domain vary widely in meaning.
+This makes the obtained IE patterns equally varied.  For example,
+there are 206 patterns in arrest events that contain only one {\it
+PERSON} NE. These expressions have varied predicates like {\it
+murder}, {\it die}, {\it run}, {\it abduct}, {\it rob}, {\it
+testify}, and so on. Since our method only considers the NEs
+contained in these patterns, a wrong pair of patterns can be
+paired as paraphrases in this domain.
+
+The lack of NEs raises another problem in the calculation of the
+sentence similarity.  Since we use only NEs for the calculation
+currently, sentences which contains fewer NEs are likely to be
+misidentified.  So it is important to consider other words in
+calculating sentence similarity. A possible solution for this
+problem is to use not only NEs but also common nouns to find
+similar sentences.
+
+
+\subsection*{Coverage}
+
+In this experiment, the coverage of obtained paraphrases is still
+low. However, we can expect that we will finally obtain a
+sufficient number of paraphrases, because the variety of
+paraphrases in a certain domain can saturate as we use a
+sufficient number of articles. Instead, the number of potentially
+obtainable paraphrases is more important because we want
+to be able to capture as wide a range of
+paraphrases as possible. So the problem is how to create a system
+that can handle such varied phrases.  Our current IE patterns are
+limited to a single path in a dependency tree because of the
+limitation of the IE pattern extraction system we used
+\cite{sudo:01}.  For example, we cannot obtain a pattern like
+``{\it PERSON$_1$} is promoted to {\it POST$_1$}'', since the
+dependency tree of this expression has two branches.  Now we are
+independently trying to extend them to include several branches
+to represent more complicated patterns, which
+would enable us to obtain more varied paraphrases.
+
+Another possible problem is that not all sentences can be cleanly
+divided. A phrase used in one sentence may have inherently
+composite meanings and describe two events at once, whereas the
+expressions of the two events are separated in the other
+sentence. These patterns may reduce the overall coverage. For
+example, a pattern ``{\it PERSON$_1$} strangle $\phi$'' can be
+regarded as reporting two events: throttling and killing. This is
+one aspect of our future work.
+
+Moreover, it is natural that comparable NEs appear in several
+forms which cannot be covered by current NE matching method, like
+``New York City'', ``NYC'', or ``the city''.  To solve this
+problem, we may need to consider co-reference information also.
+We are planning to refine the NE matching method in future.
+
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section{Acknowledgments}
+
+This research is supported by the Defense Advanced Research
+Projects Agency as part of the Translingual Information Detection,
+Extraction and Summarization (TIDES) program, under Grant
+N66001-001-1-8917 from the Space and Naval Warfare Systems Center
+San Diego, and by the National Science Foundation under Grant
+IIS-0081962.  This paper does not necessarily reflect the position
+or the policy of the U.S. Government.
+
+
+\bibliographystyle{abbrv}
+\bibliography{yusuke}
+
+\end{document}
+
