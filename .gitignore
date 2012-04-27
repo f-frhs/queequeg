@@ -1,2 +1,6 @@
+# Generated from the Wordnet things.
 dict.txt
+# Compiled Python files.
 *.pyc
+# Generated from htdocs/index-e.html
+README
