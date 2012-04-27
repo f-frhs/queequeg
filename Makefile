@@ -12,6 +12,8 @@ all:	# do nothing default
 clean:
 	-rm -f *.pyc *.bak *.o core ,* *~ tags TAGS "#"* ".#"*
 	-rm -f htdocs/*~ htdocs/"#"* htdocs/".#"*
+
+veryclean: 	clean
 	-rm -f ./dict.cdb ./dict.txt
 
 dict:
