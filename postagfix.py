@@ -95,14 +95,7 @@ if __name__ == "__main__":
     def feed(self, s):
       print repr(s)
       return
-  if sys.argv[1] == "-t":
-    docproc = TexProcessor
-  elif sys.argv[1] == "-l":
-    docproc = HTMLProcessor
-  elif sys.argv[1] == "-p":
-    docproc = PlainTextProcessor
-  else:
-    assert 0
+  docproc = PlainTextProcessor
   dict = Dictionary("LOCAL/dict.txt")
   out = Consumer()
   pipeline = docproc(TextTokenizer(SentenceSplitter(POSTagger(dict, POSTagFixer(out)))))
