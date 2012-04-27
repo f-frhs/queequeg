@@ -1,23 +1,14 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN">
 <html>
 <head>
-<meta http-equiv="Content-Type" content="text/html; charset=euc-jp">
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 <title>Queequeg, A Tiny English Grammar Checker</title>
-<style type="text/css">
-<!--
-BLOCKQUOTE.gray { background: #eeeeee; }
--->
-</style>
 </head>
 
 <body>
 <p> <a href="index.html">[Japanese]</a>
 
 <h2>Queequeg, A Tiny English Grammar Checker</h2>
-
-<div align=right><font size="-1">
-$Id: index-e.html,v 1.1 2003/07/27 13:54:05 euske Exp $
-</font></div>
 
 <p>
 <a href="http://sourceforge.net/projects/queequeg/">
@@ -99,7 +90,7 @@ plain text, LaTeX and HTML.
   <dd> The program is written in Python.
        You need version 2.2 or newer so that it works fine.
        
-  <dt> <a href="http://www.cogsci.princeton.edu/~wn/">Wordnet 1.7.1</a>
+  <dt> <a href="http://wordnet.princeton.edu//">Wordnet 1.7.1</a>
   <dd> WordNet is a free online thesaurus developed by Prof. George Miller.
        <a href="http://packages.debian.org/unstable/text/wordnet.html">This package is now contained in Debian.</a>
        <br>
@@ -127,8 +118,8 @@ Download the archive file in the follwing page. (about 60kbytes)
        somewhere.
   <li> Build a system dictionary.
        Type at the top directory of Queequeg:
-       <blockquote><code><strong>$</strong> make dict WORDNET=<i>/src/wordnet/dict</i></code></blockquote>
-       where the environment variable <code>WORDNET</code> should be
+       <blockquote><code><strong>$</strong> make dict WORDNETDICT=<i>/src/wordnet/dict</i></code></blockquote>
+       where the environment variable <code>WORDNETDICT</code> should be
        the pathname of the <code>dict/</code> directory in WordNet package.
        <br>
        (Note: If you're using a Debian package, the dictionaries are put in
