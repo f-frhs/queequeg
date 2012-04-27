@@ -13,8 +13,8 @@ test:
 	perl t/queequeg.t
 
 clean:
-	-rm -f *.pyc *.bak *.o core ,* *~ tags TAGS "#"* ".#"*
-	-rm -f htdocs/*~ htdocs/"#"* htdocs/".#"*
+	-rm -f *.pyc
+	-rm README
 
 veryclean: 	clean
 	-rm -f ./dict.cdb ./dict.txt
