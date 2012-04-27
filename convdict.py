@@ -6,12 +6,7 @@
 from __future__ import generators
 import re
 
-# try to load cdb
 import sys
-try:
-  import cdb
-except ImportError:
-  cdb = None
 
 
 # cut off postags which account less than 3% of all occurrences.
@@ -281,14 +276,6 @@ class DictionaryConverter:
     return
 
   def write(self, outfile=""):
-    if outfile.endswith(".cdb"):
-      self.msg("Writing to CDB: %s..." % (outfile))
-      out = cdb.cdbmake(outfile, outfile+".tmp")
-      for (w, poss) in self.dict.iteritems():
-        s = map(lambda pf:"%s:%s" % pf, poss.iteritems())
-        out.add(w, ",".join(s))
-      out.finish()
-    else:
       self.msg("Writing to plaintext: %s..." % (outfile))
       if outfile:
         fp = file(outfile, "w")
@@ -298,7 +285,7 @@ class DictionaryConverter:
         s = map(lambda pf:"%s:%s" % pf, poss.iteritems())
         fp.write(w+"\t"+",".join(s)+"\n")
       fp.close()
-    return
+      return
 
 
 # main
@@ -308,18 +295,10 @@ if __name__ == "__main__":
     sys.exit(2)
 
   (special_file, wordnet_dir, outfiles) = (sys.argv[1], sys.argv[2], sys.argv[3:])
-  if not cdb and filter(lambda n: n.endswith(".cdb"), outfiles):
-    print >>sys.stderr, "cdb is not supported."
-    sys.exit(3)
     
   d = DictionaryConverter()
   d.read(special_file, wordnet_dir)
   if not outfiles:
-    if cdb:
-      print >>sys.stderr, "cdb is supported. writing to dict.cdb."
-      outfiles = ["dict.cdb"]
-    else:
-      print >>sys.stderr, "cdb is not supported. writing to dict.txt."
       outfiles = ["dict.txt"]
   d.filter_unusual()
   for outfile1 in outfiles:
