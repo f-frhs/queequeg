@@ -7,3 +7,11 @@ cntlist.rev
 The files from this directory are index.special and convdict.py.
 
 Convdict.py is not used by "qq".
+
+abstfilter.py is a base class used by the parsers.
+
+(Parsers deleted from textonly branch)
+
+Dictionary file "dict.txt" contains words in apparently random order
+and some information about parts of speech.
+

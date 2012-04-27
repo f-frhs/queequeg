@@ -5,6 +5,7 @@
 ##
 
 import sys, re
+import json
 
 from abstfilter import AbstractFeeder, AbstractFilter, AbstractConsumer
 from grammarerror import GrammarNounAgreementError, GrammarVerbAgreementError, GrammarNonDeterminerError
