@@ -2,12 +2,15 @@
 #
 
 # must be specified by a user
-WORDNETDICT=/src/wordnet/dict
+WORDNETDICT=/home/ben/projects/queequeg/WordNet-3.0/dict
 
 VERSION=0.91
 PACKAGE=queequeg-$(VERSION)
 
 all:	# do nothing default
+
+test:
+	perl t/queequeg.t
 
 clean:
 	-rm -f *.pyc *.bak *.o core ,* *~ tags TAGS "#"* ".#"*
@@ -16,7 +19,7 @@ clean:
 veryclean: 	clean
 	-rm -f ./dict.cdb ./dict.txt
 
-dict:
+dict:	$(WORDNETDICT)
 	python ./convdict.py index.special $(WORDNETDICT)
 
 localdict: dict.cdb dict.txt
