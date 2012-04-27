@@ -18,7 +18,7 @@ class TerminalOutput(AbstractConsumer):
   ESC = "\033"
   TERM_RED = ESC+"[31m"                   # red
   TERM_GREEN = ESC+"[32m"                 # green
-  TERM_YELLOW = ESC+"[33m"                # yellow
+  TERM_YELLOW = ESC+"[34m"                # yellow
   TERM_NORMAL = ESC+"[m"
 
   def __init__(self, verbosity=0, out=sys.stdout):
