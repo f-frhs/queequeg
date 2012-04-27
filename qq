@@ -28,7 +28,7 @@ def get_dictpath():
   p = os.environ.get("SYSTEM_DICT")
   if p: return p
   dir = os.path.dirname(os.path.realpath(sys.argv[0]))
-  for p in [ dir+"/dict.cdb", dir+"/dict.txt" ]:
+  for p in [ dir+"/dict.txt" ]:
     if os.path.exists(p):
       return p
   return None

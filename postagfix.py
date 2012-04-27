@@ -103,7 +103,7 @@ if __name__ == "__main__":
     docproc = PlainTextProcessor
   else:
     assert 0
-  dict = Dictionary("LOCAL/dict.cdb")
+  dict = Dictionary("LOCAL/dict.txt")
   out = Consumer()
   pipeline = docproc(TextTokenizer(SentenceSplitter(POSTagger(dict, POSTagFixer(out)))))
   pipeline.read(sys.stdin)

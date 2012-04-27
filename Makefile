@@ -17,15 +17,10 @@ clean:
 	-rm README
 
 veryclean: 	clean
-	-rm -f ./dict.cdb ./dict.txt
+	-rm -f ./dict.txt
 
 dict:	$(WORDNETDICT)
 	python ./convdict.py index.special $(WORDNETDICT)
-
-localdict: dict.cdb dict.txt
-	-mkdir LOCAL
-	mv dict.cdb dict.txt LOCAL/
-	ln -s LOCAL/dict.cdb LOCAL/dict.txt .
 
 HTMLDOC=htdocs/index-e.html
 
