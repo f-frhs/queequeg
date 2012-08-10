@@ -88,11 +88,13 @@ light background."
     (when (buffer-live-p (process-buffer (ad-get-arg 0)))
       (save-excursion
 	(set-buffer (process-buffer (ad-get-arg 0)))
-	(when (string-equal (nth 2 compilation-arguments) "queequeg")
+	;; FIXME! Is this condition required?
+	(when t; (string-equal (nth 2 compilation-arguments) "queequeg")
 	  (goto-char (process-mark (ad-get-arg 0)))
 	  (forward-line 0)
 	  (let ((beg (point-min-marker))
-		(end (point-marker)))
+		(end (point-marker))
+		(buffer-read-only nil))
 	    (funcall (if queequeg-ignore-escape-sequence
 			 'ansi-color-filter-region
 		       'ansi-color-apply-on-region)
