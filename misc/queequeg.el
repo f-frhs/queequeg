@@ -74,7 +74,7 @@
 
 (defcustom queequeg-ignore-escape-sequence
   (eq 'light (cdr (assq 'background-mode (frame-parameters))))
-  "*Non-nil means taht all escape sequences are ignored.
+  "*Non-nil means that all escape sequences are ignored.
 Because escape sequences printed by Queequeg are fitted to dark
 backgrounds, you should set this option when you are using emacs in
 light background."
