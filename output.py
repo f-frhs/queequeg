@@ -30,7 +30,7 @@ class TerminalOutput(AbstractConsumer):
     w = m.getseq()[0]
     while w.is_sent:
       w = w.s.words[0]
-    self.out.write("%s:%d: " % (w.s.f.name, w.s.line + 1))
+    self.out.write("%s:%d:%d: " % (w.s.f.name, w.s.line + 1, w.s.col + 1))
     if 1 <= self.verbosity:
       self.out.write("[%14s] " % (msg))
     return
