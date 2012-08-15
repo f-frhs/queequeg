@@ -1,0 +1,15 @@
+#+TITLE: README
+#+STARTUP: showall
+
+
+* これは何ですか?
+
+英文法チェッカ [[http://queequeg.sourceforge.net/][Queequeg]] を
+emacs から利用可能です。
+現在は compile.el のインターフェスを利用しています。
+
+デモを見るには、以下のリンクをクリックして下さい。
+
+[[https://github.com/f-frhs/queequeg/tree/master/demo][go to and see the animation demo]]
+
+
